@@ -24,11 +24,11 @@ func main() {
 	flag.StringVar(&serviceType, "service-type", "full", "define the service type based on the flag")
 	flag.Parse()
 
-	startTc(serviceType)
+	startService(serviceType)
 
 }
 
-func startTc(serviceType string) {
+func startService(serviceType string) {
 	log.Logger.Info("Service Type: ", serviceType)
 
 	if serviceType == "" || serviceType == "full" {
