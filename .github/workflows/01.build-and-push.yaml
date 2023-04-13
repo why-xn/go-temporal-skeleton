@@ -20,4 +20,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: why-xn/go-temporal-skeleton:${{ github.sha }}
+          tags: whyxn/go-temporal-skeleton:${{ github.sha }}
