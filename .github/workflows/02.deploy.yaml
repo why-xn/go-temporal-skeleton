@@ -18,30 +18,13 @@ jobs:
     steps:
       - name: Printing Tag
         run: echo ${{ inputs.tag }}
-      - name: Install kubectl
+      - name: Set up kubectl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_ACCESS_TOKEN }}
+      - name: Set up context
         run: |
-          curl -LO "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl"
-          sudo install ./kubectl /usr/local/bin/ && rm kubectl
-          kubectl version --short --client
-          kubectl version --short --client | grep -q ${KUBERNETES_VERSION}
-      - name: Install Kind
-        run: |
-          curl -L -o kind https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-linux-amd64
-          sudo install ./kind /usr/local/bin && rm kind
-          kind version
-          kind version | grep -q ${KIND_VERSION}
-      - name: Create Kind Cluster
-        run: |
-          kind create cluster
-      - name: Set up Cluster
-        run: |
-          kubectl cluster-info
-          kubectl get no
-      - name: Check Nodes
-        run: |
-          kubectl get no
-      - name: Wait for Kind Cluster to be Ready
-        run: sleep 30s
+          doctl kubernetes cluster kubeconfig save ${{ secrets.DO_CLUSTER_NAME }}
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Set up Helm
@@ -50,10 +33,10 @@ jobs:
           version: v3.8.2
       - name: Deploy
         run: |
-          kubectl create ns test
+          kubectl create ns ${{ DO_NAMESPACE }}
           helm upgrade --install gts ./helm/go-temporal-skeleton \
             --set image.tag=${{ inputs.tag }} \
-            --namespace test
+            --namespace ${{ DO_NAMESPACE }}
         shell: bash
       - name: Check Rollout Status
-        run: kubectl rollout status deploy/gts-go-temporal-skeleton -n test
+        run: kubectl rollout status deploy/gts-go-temporal-skeleton -n ${{ DO_NAMESPACE }}
