@@ -1,0 +1,59 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The Tag to deploy'
+        required: true
+
+env:
+  KUBERNETES_VERSION: "1.23.5"
+  KIND_VERSION: "0.16.0"
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch'
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install kubectl
+        run: |
+          curl -LO "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl"
+          sudo install ./kubectl /usr/local/bin/ && rm kubectl
+          kubectl version --short --client
+          kubectl version --short --client | grep -q ${KUBERNETES_VERSION}
+      - name: Install Kind
+        run: |
+          curl -L -o kind https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-linux-amd64
+          sudo install ./kind /usr/local/bin && rm kind
+          kind version
+          kind version | grep -q ${KIND_VERSION}
+      - name: Create Kind Cluster
+        run: |
+          kind create cluster
+      - name: Set up Cluster
+        run: |
+          kubectl cluster-info
+          kubectl get no
+      - name: Check Nodes
+        run: |
+          kubectl get no
+      - name: Wait for Kind Cluster to be Ready
+        run: sleep 30s
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.8.2
+      - name: Deploy
+        run: |
+          kubectl create ns test
+          helm upgrade --install gts ./helm/go-temporal-skeleton \
+            --set image.tag=${{ inputs.tag }} \
+            --namespace test
+        shell: bash
+      - name: Check Rollout Status
+        run: kubectl rollout status deploy/gts-go-temporal-skeleton -n test
