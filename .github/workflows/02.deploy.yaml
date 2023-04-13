@@ -19,6 +19,8 @@ jobs:
     environment: production
     runs-on: ubuntu-latest
     steps:
+      - name: Printing Tag
+        run: echo ${{ inputs.tag }}
       - name: Install kubectl
         run: |
           curl -LO "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl"

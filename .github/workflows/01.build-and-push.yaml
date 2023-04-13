@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-  workflow_dispatch:
 
 env:
   KUBERNETES_VERSION: "1.23.5"
