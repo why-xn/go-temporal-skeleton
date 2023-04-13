@@ -33,10 +33,10 @@ jobs:
           version: v3.8.2
       - name: Deploy
         run: |
-          kubectl create ns ${{ DO_NAMESPACE }}
+          kubectl create ns ${{ secrets.DO_NAMESPACE }}
           helm upgrade --install gts ./helm/go-temporal-skeleton \
             --set image.tag=${{ inputs.tag }} \
             --namespace ${{ DO_NAMESPACE }}
         shell: bash
       - name: Check Rollout Status
-        run: kubectl rollout status deploy/gts-go-temporal-skeleton -n ${{ DO_NAMESPACE }}
+        run: kubectl rollout status deploy/gts-go-temporal-skeleton -n ${{ secrets.DO_NAMESPACE }}
