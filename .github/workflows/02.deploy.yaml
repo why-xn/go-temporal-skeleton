@@ -24,7 +24,7 @@ jobs:
           token: ${{ secrets.DO_ACCESS_TOKEN }}
       - name: Set up context
         run: |
-          doctl kubernetes cluster kubeconfig save ${{ secrets.DO_CLUSTER_NAME }}
+          doctl kubernetes cluster kubeconfig save ${{ secrets.DO_CLUSTER_NAME }} --expiry-seconds=180
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Set up Helm
