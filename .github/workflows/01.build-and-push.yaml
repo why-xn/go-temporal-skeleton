@@ -29,8 +29,9 @@ jobs:
 
   deploy:
     needs: build-and-push
-    environment: production
+    if: github.event_name == 'workflow_dispatch' && success()
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Install kubectl
         run: |
