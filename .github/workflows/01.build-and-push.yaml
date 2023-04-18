@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - staging
 
 env:
   KUBERNETES_VERSION: "1.23.5"
@@ -10,7 +11,9 @@ env:
 
 jobs:
   build-and-push:
-    environment: ${{ if startsWith(github.ref, 'refs/heads/master') }}production{{ else if startsWith(github.ref, 'refs/heads/staging') }}staging${{ else }}development${{ endif }}
+    strategy:
+      matrix:
+        environment: [ production, staging ]
     runs-on: ubuntu-latest
     steps:
       - name: Printing Tag
