@@ -6,8 +6,6 @@ on:
         description: 'The Tag to deploy'
         required: true
 
-#name: ${{ format('Deploy - {0}', github.event.inputs.tag) }}
-
 env:
   KUBERNETES_VERSION: "1.23.5"
   KIND_VERSION: "0.16.0"
@@ -45,3 +43,5 @@ jobs:
         shell: bash
       - name: Check Rollout Status
         run: kubectl rollout status deploy/gts-go-temporal-skeleton -n ${{ vars.DO_NAMESPACE }}
+
+name: ${{ format('Deploy - {0}', github.event.inputs.tag) }}
