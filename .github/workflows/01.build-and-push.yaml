@@ -5,28 +5,28 @@ on:
       - master
       - staging
 
-env:
-  KUBERNETES_VERSION: "1.23.5"
-  KIND_VERSION: "0.16.0"
-
 jobs:
   build-and-push:
-    strategy:
-      matrix:
-        environment:
-          - { name: production, include: startsWith(github.ref, 'refs/heads/master') }
-          - { name: staging, include: startsWith(github.ref, 'refs/heads/staging') }
     runs-on: ubuntu-latest
     steps:
       - name: Printing Tag
         run: echo ${{ github.sha }}
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Set environment variables based on branch
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo "DOCKER_USERNAME=${{ secrets.PRODUCTION_DOCKER_USERNAME }}" >> $GITHUB_ENV
+            echo "DOCKER_PASSWORD=${{ secrets.PRODUCTION_DOCKER_PASSWORD }}" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "DOCKER_USERNAME=${{ secrets.STAGING_DOCKER_USERNAME }}" >> $GITHUB_ENV
+            echo "DOCKER_PASSWORD=${{ secrets.STAGING_DOCKER_PASSWORD }}" >> $GITHUB_ENV
+          fi
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${DOCKER_USERNAME}
+          password: ${DOCKER_PASSWORD}
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
