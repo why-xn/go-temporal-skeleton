@@ -14,7 +14,7 @@ jobs:
   deploy:
     name: ${{ format('Deploy - {0}', github.event.inputs.tag) }}
     if: github.event_name == 'workflow_dispatch'
-    environment: production
+    environment: ${{ if startsWith(github.ref, 'refs/heads/master') }}production{{ else if startsWith(github.ref, 'refs/heads/staging') }}staging${{ else }}development${{ endif }}
     runs-on: ubuntu-latest
     steps:
       - name: Printing Tag
