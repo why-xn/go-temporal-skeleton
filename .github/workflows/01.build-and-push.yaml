@@ -16,7 +16,6 @@ jobs:
         environment:
           - { name: production, include: startsWith(github.ref, 'refs/heads/master') }
           - { name: staging, include: startsWith(github.ref, 'refs/heads/staging') }
-
     runs-on: ubuntu-latest
     steps:
       - name: Printing Tag
