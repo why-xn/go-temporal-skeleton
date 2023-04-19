@@ -8,24 +8,19 @@ on:
 
 jobs:
   build-and-push:
+    name: Build and Push
+    environment: production
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Set environment variables based on branch
         run: |
+          echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> $GITHUB_ENV
+          echo "DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}" >> $GITHUB_ENV
           if [[ "${{ github.ref_name }}" == v* ]]; then
-            echo "DOCKER_USERNAME=${{ secrets.PRODUCTION_DOCKER_USERNAME }}" >> $GITHUB_ENV
-            echo "DOCKER_PASSWORD=${{ secrets.PRODUCTION_DOCKER_PASSWORD }}" >> $GITHUB_ENV
-            echo "IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
-            
-            if [[ "${{ github.ref_name }}" == v* ]]; then
-              echo "IMAGE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
-            fi
-          
+            echo "IMAGE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
           elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
-            echo "DOCKER_USERNAME=${{ secrets.STAGING_DOCKER_USERNAME }}" >> $GITHUB_ENV
-            echo "DOCKER_PASSWORD=${{ secrets.STAGING_DOCKER_PASSWORD }}" >> $GITHUB_ENV
             echo "IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
           fi
       - name: Printing Tag
@@ -45,7 +40,7 @@ jobs:
   deploy:
     name: Deploy
     needs: build-and-push
-    if: github.ref_name !== v*
+    if: startsWith(github.ref_name, 'v')
     environment: production
     runs-on: ubuntu-latest
     steps:
