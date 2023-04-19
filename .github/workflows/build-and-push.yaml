@@ -45,7 +45,7 @@ jobs:
   deploy:
     name: Deploy
     needs: build-and-push
-    if: github.ref_name != v*
+    if: startsWith(github.ref_name, 'v')
     environment: production
     runs-on: ubuntu-latest
     steps:
