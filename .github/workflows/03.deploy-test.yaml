@@ -1,0 +1,54 @@
+name: Deploy Test
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The Tag to deploy'
+        required: true
+
+jobs:
+  deploy:
+    name: ${{ format('Deploy - {0}', github.event.inputs.tag) }}
+    if: github.event_name == 'workflow_dispatch'
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Printing Tag
+        run: echo ${{ inputs.tag }}
+      - name: Set environment variables based on branch
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo "DO_ACCESS_TOKEN=${{ secrets.PRODUCTION_DO_ACCESS_TOKEN }}" >> $GITHUB_ENV
+            echo "DO_CLUSTER_NAME=${{ secrets.PRODUCTION_DO_CLUSTER_NAME }}" >> $GITHUB_ENV
+            echo "DO_NAMESPACE=${{ secrets.PRODUCTION_DO_NAMESPACE }}" >> $GITHUB_ENV
+            echo "HELM_VALUES_FILE=${{ secrets.PRODUCTION_HELM_VALUES_FILE }}" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/staging-devops" ]]; then
+            echo "DO_ACCESS_TOKEN=${{ secrets.STAGING_DO_ACCESS_TOKEN }}" >> $GITHUB_ENV
+            echo "DO_CLUSTER_NAME=${{ secrets.STAGING_DO_CLUSTER_NAME }}" >> $GITHUB_ENV
+            echo "DO_NAMESPACE=${{ secrets.STAGING_DO_NAMESPACE }}" >> $GITHUB_ENV
+            echo "HELM_VALUES_FILE=${{ secrets.STAGING_HELM_VALUES_FILE }}" >> $GITHUB_ENV
+          fi
+      - name: Set up kubectl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ env.DO_ACCESS_TOKEN }}
+      - name: Set up context
+        run: |
+          doctl kubernetes cluster kubeconfig save ${{ env.DO_CLUSTER_NAME }} --expiry-seconds=180
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.8.2
+      - name: Create Namespace
+        run: kubectl create ns ${{ env.DO_NAMESPACE }}
+        continue-on-error: true
+      - name: Deploy
+        run: |
+          helm upgrade --install barri-admin ./helm/k8 \
+            --set image.tag=${{ inputs.tag }} \
+            --namespace ${{ env.DO_NAMESPACE }} -f ${{ env.HELM_VALUES_FILE }}
+        shell: bash
+      - name: Check Rollout Status
+        run: kubectl rollout status deploy/barri-admin-app -n ${{ env.DO_NAMESPACE }}
