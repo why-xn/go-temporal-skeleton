@@ -23,7 +23,7 @@ jobs:
             echo "DOCKER_USERNAME=${{ secrets.STAGING_DOCKER_USERNAME }}" >> $GITHUB_ENV
             echo "DOCKER_PASSWORD=${{ secrets.STAGING_DOCKER_PASSWORD }}" >> $GITHUB_ENV
             echo "IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
-          else; then
+          else
             echo "IMAGE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
           fi
       - name: Printing Tag
