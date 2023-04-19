@@ -20,7 +20,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          user_login=$(echo ${{ github.actor }} | jq -r '.login')
+          user_login=${{ github.actor }}
           is_admin=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$REPOSITORY/collaborators/$user_login/permission" | jq -r '.permission')
           if [ "$is_admin" != "admin" ]; then
             echo "error: Only repository admins can trigger this workflow."
