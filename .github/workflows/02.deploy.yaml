@@ -12,6 +12,7 @@ env:
 
 jobs:
   admin_check:
+    name: Check if Triggered by Admin
     runs-on: ubuntu-latest
     steps:
       - name: Check if user is an admin
