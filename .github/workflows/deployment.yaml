@@ -6,9 +6,6 @@ on:
         description: 'The Tag to deploy'
         required: true
 
-env:
-  KUBERNETES_VERSION: "1.23.5"
-  KIND_VERSION: "0.16.0"
 
 jobs:
   admin_check:

@@ -4,7 +4,6 @@ on:
     tags:
       - 'v*'
     branches:
-      - master
       - staging
 
 jobs:
@@ -15,7 +14,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Set environment variables based on branch
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/master" || "${{ github.ref_name }}" == v* ]]; then
+          if [[ "${{ github.ref_name }}" == v* ]]; then
             echo "DOCKER_USERNAME=${{ secrets.PRODUCTION_DOCKER_USERNAME }}" >> $GITHUB_ENV
             echo "DOCKER_PASSWORD=${{ secrets.PRODUCTION_DOCKER_PASSWORD }}" >> $GITHUB_ENV
             echo "IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
@@ -42,3 +41,13 @@ jobs:
           context: .
           push: true
           tags: whyxn/go-temporal-skeleton:${{ env.IMAGE_TAG }}
+
+  deploy:
+    name: Deploy
+    needs: build-and-push
+    if: github.ref_name !== v*
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Printing Tag
+        run: echo ${{ env.IMAGE_TAG }}
